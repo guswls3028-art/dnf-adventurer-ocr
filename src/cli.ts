@@ -9,11 +9,11 @@ function printHelp(): void {
   console.log(`dnf-adventurer-ocr
 
 Usage:
-  dnf-adventurer-ocr [--api-key KEY] [--model MODEL] <image...>
+  dnf-adventurer-ocr [--model MODEL] [--include-raw] <image...>
 
 Examples:
   GEMINI_API_KEY=... dnf-adventurer-ocr ./basic.jpg ./list.jpg ./select.jpg
-  dnf-adventurer-ocr --api-key AIza... ./capture1.png ./capture2.png
+  dnf-adventurer-ocr --include-raw ./capture1.png ./capture2.png
 `);
 }
 
@@ -28,6 +28,7 @@ function mimeFromPath(path: string): string {
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   let apiKey: string | undefined;
+  let includeRaw = false;
   let model: string | undefined;
   const paths: string[] = [];
 
@@ -40,6 +41,10 @@ async function main(): Promise<void> {
     if (arg === "--api-key") {
       apiKey = args[index + 1];
       index += 1;
+      continue;
+    }
+    if (arg === "--include-raw") {
+      includeRaw = true;
       continue;
     }
     if (arg === "--model") {
@@ -69,6 +74,7 @@ async function main(): Promise<void> {
   const result = await extractDnfProfileFromImages(images, {
     ...(apiKey ? { apiKey } : {}),
     ...(model ? { model } : {}),
+    includeRaw,
   });
   console.log(JSON.stringify(result, null, 2));
 }

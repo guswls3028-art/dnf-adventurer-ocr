@@ -199,7 +199,7 @@ export async function classifyAndExtractDnfImage(
       index,
       ...(image.fileName ? { fileName: image.fileName } : {}),
       screenType,
-      raw: rawJson,
+      ...(options.includeRaw ? { raw: rawJson } : {}),
     };
     if (screenType === "basic_info") {
       const basicInfo = normalizeBasicInfo(parsed.basicInfo);

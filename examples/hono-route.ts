@@ -5,6 +5,14 @@ import type { DnfOcrImageInput } from "dnf-adventurer-ocr";
 const app = new Hono();
 
 app.post("/dnf-profile/ocr", async (c) => {
+  if (!process.env.GEMINI_API_KEY) {
+    return c.json({ error: "gemini_api_key_required" }, 500);
+  }
+  const contentType = c.req.header("content-type") ?? "";
+  if (!contentType.includes("multipart/form-data")) {
+    return c.json({ error: "multipart_form_data_required" }, 400);
+  }
+
   const form = await c.req.parseBody({ all: true });
   const images: DnfOcrImageInput[] = [];
 
@@ -29,6 +37,7 @@ app.post("/dnf-profile/ocr", async (c) => {
   const result = await extractDnfProfileFromImages(images, {
     apiKey: process.env.GEMINI_API_KEY,
     maxConcurrency: 2,
+    includeRaw: false,
   });
 
   return c.json(result);

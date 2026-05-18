@@ -89,6 +89,7 @@ const images = await Promise.all(
 
 const result = await extractDnfProfileFromImages(images, {
   apiKey: process.env.GEMINI_API_KEY,
+  includeRaw: false,
 });
 
 console.log(result.merged);
@@ -116,7 +117,7 @@ console.log(result.merged);
 - `mainCharacterClass`: 대표 캐릭터 직업명
 - `characters`: 추출된 캐릭터 목록
 - `verifiedBySelectScreen`: 캐릭터 선택창 기준 인증 성공 여부
-- `perImage`: 이미지별 화면 분류와 원본 OCR 결과
+- `perImage`: 이미지별 화면 분류 결과. 원본 OCR 응답은 `includeRaw: true`일 때만 포함됩니다.
 
 ## API 연동 포인트
 
@@ -136,6 +137,15 @@ console.log(result.merged);
 보유 캐릭터 화면은 이미지 편집이나 타인 캡처 재사용 가능성이 있으므로, 캐릭터 목록 보강에만 씁니다. 반면 로그인 직후 캐릭터 선택창은 실제 계정 접근성이 필요하다고 보고 인증 신호로 씁니다.
 
 즉, 사용자가 올린 기본정보 화면의 대표 캐릭터가 캐릭터 선택창에도 있으면 인증 성공입니다.
+
+다만 캡처 기반 검증은 완전한 신원 인증이 아닙니다. 운영 편의와 사칭 방지 보조 장치로 쓰고, 금전 거래나 계정 소유권을 보증하는 용도로 단독 사용하지 않는 것을 권장합니다.
+
+## 개인정보와 보안
+
+- 업로드한 이미지는 Gemini API 분석을 위해 Google API로 전송됩니다. 서비스에 붙일 때는 사용자에게 이 사실을 고지하세요.
+- 이 패키지는 이미지를 저장하지 않습니다. 저장 여부와 보관 기간은 연동하는 서버에서 별도로 정해야 합니다.
+- API key는 서버 환경변수로만 다루세요. 브라우저 코드, 앱 번들, 공개 저장소에 넣으면 안 됩니다.
+- 운영 API로 붙일 때는 로그인, rate limit, 이미지 용량 제한, 호출 실패 처리, 원본 이미지 폐기 정책을 함께 두는 것을 권장합니다.
 
 ## 문제 해결
 
