@@ -2,7 +2,7 @@
   "name": "dnf-adventurer-ocr",
   "version": "0.1.0",
   "private": true,
-  "description": "DNF Mobile adventurer profile OCR and select-screen verification helper.",
+  "description": "DNF Mobile adventurer verification and character-list OCR helper using Gemini API.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -38,5 +38,8 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
   }
 }

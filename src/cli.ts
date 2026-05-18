@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import "dotenv/config";
 import { readFile } from "node:fs/promises";
 import { basename, extname } from "node:path";
 import { extractDnfProfileFromImages } from "./index.js";
