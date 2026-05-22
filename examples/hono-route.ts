@@ -32,7 +32,7 @@ app.post("/dnf-profile/ocr", async (c) => {
   }
 
   if (images.length === 0) return c.json({ error: "image_required" }, 400);
-  if (images.length > 20) return c.json({ error: "too_many_images" }, 400);
+  if (images.length > 10) return c.json({ error: "too_many_images" }, 400);
 
   const result = await extractDnfProfileFromImages(images, {
     apiKey: process.env.GEMINI_API_KEY,

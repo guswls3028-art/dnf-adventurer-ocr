@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import "dotenv/config";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { basename, extname } from "node:path";
 import { extractDnfProfileFromImages } from "./index.js";
-import type { DnfOcrImageInput } from "./types.js";
+import type { DnfOcrImageInput } from "./domain/types.js";
 
 function printHelp(): void {
   console.log(`dnf-adventurer-ocr
@@ -63,18 +63,35 @@ async function main(): Promise<void> {
     process.exitCode = 1;
     return;
   }
+  if (apiKey) {
+    console.error("Warning: --api-key can leak through shell history/process lists. Prefer GEMINI_API_KEY.");
+  }
 
-  const images: DnfOcrImageInput[] = await Promise.all(
-    paths.map(async (path) => ({
+  const maxImages = 10;
+  const maxTotalBytes = 30 * 1024 * 1024;
+  if (paths.length > maxImages) {
+    throw new Error(`Too many images. Maximum is ${maxImages}.`);
+  }
+  let totalBytes = 0;
+  const images: DnfOcrImageInput[] = [];
+  for (const path of paths) {
+    const info = await stat(path);
+    totalBytes += info.size;
+    if (totalBytes > maxTotalBytes) {
+      throw new Error(`Images are too large. Maximum total is ${maxTotalBytes} bytes.`);
+    }
+    images.push({
       data: await readFile(path),
       mimeType: mimeFromPath(path),
       fileName: basename(path),
-    })),
-  );
+    });
+  }
   const result = await extractDnfProfileFromImages(images, {
     ...(apiKey ? { apiKey } : {}),
     ...(model ? { model } : {}),
     includeRaw,
+    maxImages,
+    maxTotalBytes,
   });
   console.log(JSON.stringify(result, null, 2));
 }

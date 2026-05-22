@@ -20,6 +20,8 @@ export interface DnfOcrOptions {
   model?: string;
   timeoutMs?: number;
   maxConcurrency?: number;
+  maxImages?: number;
+  maxTotalBytes?: number;
   includeRaw?: boolean;
   fetchImpl?: (input: string, init?: RequestInit) => Promise<Response>;
 }

@@ -31,6 +31,14 @@ Gemini API를 연동해 던파 모바일 스크린샷을 분석하고, 모험단
 
 Gemini API key는 Google AI Studio에서 발급한 뒤 서버 환경변수 `GEMINI_API_KEY`로 넣으면 됩니다. 브라우저 프론트엔드에 API 키를 직접 넣지 마세요.
 
+## 구조
+
+- `src/index.ts` — public package entrypoint.
+- `src/application/` — OCR use-case, image validation, merge/verification orchestration.
+- `src/domain/` — return types and DNF class normalization.
+- `src/infrastructure/` — Gemini API adapter.
+- `src/cli.ts` — command line interface.
+
 ## 캡처하면 좋은 화면
 
 이미지는 순서대로 올리지 않아도 됩니다. Gemini가 화면 종류를 자동 분류합니다.
@@ -121,12 +129,13 @@ console.log(result.merged);
 
 ## API 연동 포인트
 
-서버에서는 업로드 이미지를 `Uint8Array` 또는 `Buffer`로 읽어서 `extractDnfProfileFromImages()`에 넘기면 됩니다. Hono 예시는 [examples/hono-route.ts](examples/hono-route.ts)에 있습니다.
+서버에서는 업로드 이미지를 `Uint8Array` 또는 `Buffer`로 읽어서 `extractDnfProfileFromImages()`에 넘기면 됩니다. Hono 예시는 [examples/hono-route.ts](examples/hono-route.ts)에 있습니다. 예시는 Hono를 이미 쓰는 서버에 붙이는 참고 코드이며, 이 패키지는 Hono를 런타임 의존성으로 포함하지 않습니다.
 
 운영 권장값:
 
 - `maxConcurrency`: 2
 - `timeoutMs`: 60000
+- `maxImages`: 기본 10
 - 업로드 제한: 이미지당 10MB 이하
 - 저장 정책: OCR 원본 이미지는 인증 완료 후 필요 기간만 보관하거나 즉시 폐기
 
@@ -152,7 +161,7 @@ console.log(result.merged);
 - `GEMINI_API_KEY is required`: API 키가 없거나 환경변수로 전달되지 않았습니다.
 - `verifiedBySelectScreen: false`: 기본정보의 대표 캐릭터명이 캐릭터 선택창에서 발견되지 않았습니다. 기본정보 화면과 캐릭터 선택창이 같은 계정인지 확인하세요.
 - `screenType: unknown`: 던파 모바일 화면이 아니거나, 캡처가 흐리거나, 직업 변경표처럼 실제 캐릭터 목록이 없는 화면일 수 있습니다.
-- 캐릭터 직업명이 이상함: OCR 결과를 던파 모바일 직업명 매핑으로 정규화하지만, 신규 직업이나 OCR 오타는 [src/classes.ts](src/classes.ts)에 alias를 추가해 보정할 수 있습니다.
+- 캐릭터 직업명이 이상함: OCR 결과를 던파 모바일 직업명 매핑으로 정규화하지만, 신규 직업이나 OCR 오타는 [src/domain/classes.ts](src/domain/classes.ts)에 alias를 추가해 보정할 수 있습니다.
 
 ## 주의
 

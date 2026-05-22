@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { computeVerified, mergeDnfOcrResults, normalizeClassName } from "./index.js";
+import {
+  computeVerified,
+  extractDnfProfileFromImages,
+  mergeDnfOcrResults,
+  normalizeClassName,
+} from "./index.js";
 
 describe("dnf adventurer verification", () => {
   it("verifies only when the main character exists in the select screen", () => {
@@ -38,5 +43,19 @@ describe("dnf adventurer verification", () => {
 
     expect(merged.verifiedBySelectScreen).toBe(true);
     expect(merged.characters).toHaveLength(1);
+  });
+
+  it("rejects unsafe batch limits before calling OCR", async () => {
+    await expect(
+      extractDnfProfileFromImages([{ data: new Uint8Array([1]), mimeType: "image/png" }], {
+        maxConcurrency: 0,
+      }),
+    ).rejects.toThrow(/maxConcurrency/u);
+
+    await expect(
+      extractDnfProfileFromImages([{ data: new Uint8Array([1, 2]), mimeType: "image/png" }], {
+        maxTotalBytes: 1,
+      }),
+    ).rejects.toThrow(/too large/u);
   });
 });

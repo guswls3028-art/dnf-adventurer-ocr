@@ -1,11 +1,11 @@
-import { normalizeClassName } from "./classes.js";
+import { normalizeClassName } from "../domain/classes.js";
 import type {
   DnfOcrBasicInfo,
   DnfOcrCharacter,
   DnfOcrImageInput,
   DnfOcrOptions,
   DnfOcrPerImage,
-} from "./types.js";
+} from "../domain/types.js";
 
 export const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
 const DEFAULT_TIMEOUT_MS = 60_000;
@@ -157,12 +157,12 @@ export async function classifyAndExtractDnfImage(
   };
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
     model,
-  )}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  )}:generateContent`;
 
   try {
     const response = await fetchImpl(url, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", "x-goog-api-key": apiKey },
       body: JSON.stringify(body),
       signal: controller.signal,
     });
