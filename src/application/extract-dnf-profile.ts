@@ -1,4 +1,3 @@
-import { DEFAULT_GEMINI_MODEL, classifyAndExtractDnfImage } from "../infrastructure/gemini.js";
 import type {
   DnfOcrCharacter,
   DnfOcrImageInput,
@@ -10,10 +9,15 @@ import type {
 
 export * from "../domain/classes.js";
 export * from "../domain/types.js";
-export * from "../infrastructure/gemini.js";
-
 const DEFAULT_MAX_IMAGES = 10;
 const DEFAULT_MAX_TOTAL_BYTES = 30 * 1024 * 1024;
+const MOCK_MODEL = "mock";
+
+export type DnfImageClassifier = (
+  image: DnfOcrImageInput,
+  index: number,
+  options: DnfOcrOptions,
+) => Promise<DnfOcrPerImage>;
 
 function identityKey(value: string | undefined): string {
   return value?.replace(/\s+/g, "").trim() ?? "";
@@ -123,18 +127,20 @@ async function mapWithConcurrency<T, R>(
   return results;
 }
 
-export async function extractDnfProfileFromImages(
+export async function extractDnfProfileFromImagesWithClassifier(
   images: DnfOcrImageInput[],
   options: DnfOcrOptions = {},
+  classifyImage: DnfImageClassifier,
+  defaultModel: string,
 ): Promise<DnfOcrResult> {
   const maxConcurrency = validateExtractionInput(images, options);
   const perImage = await mapWithConcurrency(images, maxConcurrency, (image, index) =>
-    classifyAndExtractDnfImage(image, index, options),
+    classifyImage(image, index, options),
   );
 
   return {
     source: "gemini",
-    model: options.model ?? DEFAULT_GEMINI_MODEL,
+    model: options.model ?? defaultModel,
     merged: mergeDnfOcrResults(perImage),
     perImage,
   };
@@ -165,7 +171,7 @@ export function buildMockDnfOcrResult(): DnfOcrResult {
   ];
   return {
     source: "gemini",
-    model: DEFAULT_GEMINI_MODEL,
+    model: MOCK_MODEL,
     perImage,
     merged: mergeDnfOcrResults(perImage),
   };
